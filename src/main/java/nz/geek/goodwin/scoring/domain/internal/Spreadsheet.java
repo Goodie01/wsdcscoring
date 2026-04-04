@@ -51,6 +51,30 @@ public class Spreadsheet<Row, Column, CellValue> {
         return entries.get(new CompositeKey<>(row, column));
     }
 
+    public void removeRows(final Collection<Row> rows) {
+        rows.forEach(this::removeRow);
+    }
+
+    public void removeColumns(final Collection<Column> columns) {
+        columns.forEach(this::removeColumn);
+    }
+
+    public void removeRow(final Row row) {
+        if (row == null) {
+            return;
+        }
+        entries.entrySet().removeIf(entry -> entry.getKey().row().equals(row));
+        rows.remove(row);
+    }
+
+    public void removeColumn(final Column column) {
+        if (column == null) {
+            return;
+        }
+        entries.entrySet().removeIf(entry -> entry.getKey().column().equals(column));
+        columns.remove(column);
+    }
+
     public Map<Column, CellValue> getAllForRow(Row row) {
         return entries.entrySet().stream()
                 .filter(entry -> entry.getKey().row().equals(row))

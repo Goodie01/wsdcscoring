@@ -9,7 +9,6 @@ import org.apache.commons.lang3.Strings;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class RelativeScoringService {
@@ -18,6 +17,7 @@ public class RelativeScoringService {
     private Spreadsheet<ScoredDancers, Judge, Integer> ordinalScores;
     private Spreadsheet<ScoredDancers, String, String> majorityTally;
     private Spreadsheet<ScoredDancers, String, Integer> sumOfOrdinalsForTieBreaks;
+    private List<ScoredDancers> finalRanking;
 
     public RelativeScoringService(Spreadsheet<ScoredDancers, Judge, String> rawScores) {
         this.rawScores = rawScores;
@@ -61,10 +61,14 @@ public class RelativeScoringService {
                 ScoredDancers::displayName
         );
 
-        calculateFinalRanking();
+        FinalRankingCalculator finalRankingCalculator = new FinalRankingCalculator(majorityTally, ordinalScores);
+        finalRankingCalculator.calculateFinalRanking();
+        finalRanking = finalRankingCalculator.getFinalRanking();
+        finalRanking.forEach(dancer -> out.println("#" + dancer.bibNumber() + ": " + dancer.displayName()));
     }
 
     private void validateScores() {
+        //Rule 3.4 > 7 > b - Odd number of judges used (excluding chief judge)
         this.rawScores.getColumns().forEach(judge -> {
             Map<ScoredDancers, String> allScoresForJudge = rawScores.getAllForColumn(judge);
             allScoresForJudge
@@ -150,8 +154,6 @@ public class RelativeScoringService {
 
             Map<ScoredDancers, String> allForColumn = majorityTally.getAllForColumn(holder.toString());
 
-            //We're close... but not quite there yet
-            //The count check needs to also check if all the values are the same....
             allForColumn.forEach((scoredDancers, value) -> {
                 if (Strings.CI.equals("-", value)) {
                     return;
@@ -166,46 +168,6 @@ public class RelativeScoringService {
                     sumOfOrdinalsForTieBreaks.put(scoredDancers, holder.toString(), sum);
                 }
             });
-        }
-    }
-
-    private void calculateFinalRanking() {
-
-    }
-
-    private static class IntHolder {
-        private Integer value;
-
-        public IntHolder(Integer value) {
-            this.value = value;
-        }
-
-        public Integer getValue() {
-            return value;
-        }
-
-        public void incValue() {
-            this.value++;
-        }
-
-        public String toString() {
-            return value == 1
-                    ? "Maj: 1st"
-                    : "Maj: 1st to " + ordinal(value);
-        }
-
-        private String ordinal(int n) {
-            int mod100 = n % 100;
-            if (mod100 >= 11 && mod100 <= 13) {
-                return n + "th";
-            }
-
-            return switch (n % 10) {
-                case 1 -> n + "st";
-                case 2 -> n + "nd";
-                case 3 -> n + "rd";
-                default -> n + "th";
-            };
         }
     }
 

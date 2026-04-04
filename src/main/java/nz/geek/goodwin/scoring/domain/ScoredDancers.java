@@ -23,4 +23,9 @@ public record ScoredDancers(Integer bibNumber, List<Person> dancers) {
     public int hashCode() {
         return dancers.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return displayName();
+    }
 }
