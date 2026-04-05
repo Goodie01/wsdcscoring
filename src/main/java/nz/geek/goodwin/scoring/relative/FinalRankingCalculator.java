@@ -63,10 +63,11 @@ public class FinalRankingCalculator {
         int o2Sum = filterOrdinalScoresForDancer(o2, level).sum();
 
         if (o1Sum == o2Sum) {
+            out.println("Attempted tie break at " + new IntHolder(level) + ";" + o1 + " vs " + o2 + "; " + o1Sum + " vs " + o2Sum + "");
             return tieBreakCompare(o1, o2, level + 1);
         }
 
-        out.println(o1 + " vs " + o2 + " tie break at " + new IntHolder(level) + " = " + o1Sum + " vs " + o2Sum + "");
+        out.println("Tie break at " + new IntHolder(level) + ";" + o1 + " vs " + o2 + "; " + o1Sum + " vs " + o2Sum + "");
         return Integer.compare(o1Sum, o2Sum);
     }
 

@@ -4,10 +4,14 @@ import nz.geek.goodwin.scoring.domain.Judge;
 import nz.geek.goodwin.scoring.domain.ScoredDancers;
 import nz.geek.goodwin.scoring.domain.Spreadsheet;
 import nz.geek.goodwin.scoring.relative.spreadsheet.AsciiPrinter;
+import nz.geek.goodwin.scoring.relative.spreadsheet.HtmlPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -23,7 +27,7 @@ public class RelativeScoringService {
         this.rawScores = rawScores;
     }
 
-    public void process() {
+    public void process() throws IOException {
         AsciiPrinter asciiPrinter = new AsciiPrinter(out);
         out.println("Initial raw scores:");
         asciiPrinter.print(rawScores);
@@ -49,6 +53,14 @@ public class RelativeScoringService {
             ScoredDancers dancer = finalRanking.get(i);
             out.println((i+1) + ": " + dancer.toString());
         }
+        Path outputFile = Path.of("spreadsheet.html");
+
+        try (PrintStream out = new PrintStream(Files.newOutputStream(outputFile))) {
+            HtmlPrinter printer = new HtmlPrinter(out);
+            printer.print(ordinalScores, "Example Spreadsheet");
+        }
+
+
     }
 
     private void validateScores() {

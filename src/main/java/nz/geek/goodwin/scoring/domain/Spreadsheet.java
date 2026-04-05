@@ -22,12 +22,28 @@ public class Spreadsheet<Row, Column, CellValue> {
         other.entries.forEach((k, v) -> this.put(k.row, k.column, v));
     }
 
-    public void addRow(Row row) {
+    public void addRow(Row row, CellValue... values) {
         this.rows.add(row);
+
+        if (values.length != 0 && values.length != columns.size()) {
+            throw new IllegalArgumentException("Invalid number of values");
+        }
+
+        for (int i = 0; i < values.length; i++) {
+            put(row, columns.get(i), values[i]);
+        }
     }
 
-    public void addColumn(Column column) {
+    public void addColumn(Column column, CellValue... values) {
         this.columns.add(column);
+
+        if (values.length != 0 && values.length != rows.size()) {
+            throw new IllegalArgumentException("Invalid number of values");
+        }
+
+        for (int i = 0; i < values.length; i++) {
+            put(rows.get(i), column, values[i]);
+        }
     }
 
     public void addRows(List<Row> rows) {
