@@ -31,23 +31,21 @@ public class FinalRankingCalculator {
         this.finalRanking = new ArrayList<>();
 
         List<String> columns = new ArrayList<>(this.majorityTally.getColumns()).stream()
-                .sorted(Comparator.comparing(s -> majorityOrder(s)))
+                .sorted(Comparator.comparing(FinalRankingCalculator::majorityOrder))
                 .toList();
         for (int i = 0; i < columns.size(); i++) {
-            int level = majorityOrder(columns.get(i));
-
-            Comparator<Map.Entry<ScoredDancers, String>> comparing = (o1, o2) -> {
-                if (o1.getValue().equals(o2.getValue())) {
-                    return tieBreakCompare(o1.getKey(), o2.getKey(), level);
-                }
-                return MAP_COMPARING_BY_VALUE.compare(o1, o2);
-            };
+            int level = majorityOrder(columns.get(i)); //Turns something like 'Maj: 1st to 6th' to 6
 
             List<Map.Entry<ScoredDancers, String>> list = this.majorityTally.getAllForColumn(columns.get(i))
                     .entrySet()
                     .stream()
                     .filter(entry -> !Strings.CI.equals("-", entry.getValue()))
-                    .sorted(comparing)
+                    .sorted((o1, o2) -> {
+                        if (o1.getValue().equals(o2.getValue())) {
+                            return tieBreakCompare(o1.getKey(), o2.getKey(), level);
+                        }
+                        return MAP_COMPARING_BY_VALUE.compare(o1, o2);
+                    })
                     .toList();
 
             list.forEach(entry -> {
@@ -68,7 +66,7 @@ public class FinalRankingCalculator {
             return tieBreakCompare(o1, o2, level + 1);
         }
 
-        out.println(o1.displayName() + " vs " + o2.displayName() + " tie break at " + new IntHolder(level) + " = " + o1Sum + " vs " + o2Sum + "");
+        out.println(o1 + " vs " + o2 + " tie break at " + new IntHolder(level) + " = " + o1Sum + " vs " + o2Sum + "");
         return Integer.compare(o1Sum, o2Sum);
     }
 

@@ -3,14 +3,6 @@ package nz.geek.goodwin.scoring.domain;
 import java.util.List;
 
 public record ScoredDancers(Integer bibNumber, List<Person> dancers) {
-    public String displayId() {
-        return dancers.stream().map(Person::id).reduce((a, b) -> a + "/" + b).orElse("");
-    }
-
-    public String displayName() {
-        return dancers.stream().map(Person::fullName).reduce((a, b) -> a + ", " + b).orElse("");
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -26,6 +18,6 @@ public record ScoredDancers(Integer bibNumber, List<Person> dancers) {
 
     @Override
     public String toString() {
-        return displayName();
+        return "#" + bibNumber + " - " + dancers.stream().map(Person::fullName).reduce((a, b) -> a + ", " + b).orElse("");
     }
 }

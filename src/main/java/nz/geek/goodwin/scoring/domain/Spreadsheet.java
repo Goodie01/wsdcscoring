@@ -1,7 +1,6 @@
 package nz.geek.goodwin.scoring.domain;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Spreadsheet<Row, Column, CellValue> {
@@ -96,48 +95,5 @@ public class Spreadsheet<Row, Column, CellValue> {
     }
 
     private record CompositeKey<Rows, Columns>(Rows row, Columns column) {
-    }
-
-    public void output(final Comparator<Column> columnsComparator,
-                       final Comparator<Row> rowsComparator,
-                       final Function<Column, String> colDisplay,
-                       final Function<Row, String> rowDisplay) {
-        List<Column> columns = getColumns().stream()
-                .distinct()
-                .sorted(columnsComparator)
-                .toList();
-
-        List<Row> rows = getRows().stream()
-                .distinct()
-                .sorted(rowsComparator)
-                .toList();
-
-        int rowWidth = Math.max(8, rows.stream()
-                .mapToInt(d -> rowDisplay.apply(d).length())
-                .max()
-                .orElse(8));
-
-        int cellWidth = Math.max(8, columns.stream()
-                .mapToInt(j -> colDisplay.apply(j).length())
-                .max()
-                .orElse(8));
-
-        System.out.printf("%-" + rowWidth + "s", "Dancer");
-
-        for (Column column : columns) {
-            System.out.printf(" | %-" + cellWidth + "s", colDisplay.apply(column));
-        }
-        System.out.println();
-
-        System.out.println("-".repeat(rowWidth + (cellWidth + 3) * columns.size()));
-
-        for (Row row : rows) {
-            System.out.printf("%-" + rowWidth + "s", rowDisplay.apply(row));
-            for (Column column : columns) {
-                CellValue cellValue = get(row, column);
-                System.out.printf(" | %-" + cellWidth + "s", cellValue == null ? "" : cellValue);
-            }
-            System.out.println();
-        }
     }
 }

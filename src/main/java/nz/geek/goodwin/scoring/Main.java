@@ -2,12 +2,10 @@ package nz.geek.goodwin.scoring;
 
 import nz.geek.goodwin.scoring.domain.Judge;
 import nz.geek.goodwin.scoring.domain.Person;
-import nz.geek.goodwin.scoring.domain.RelativeScore;
 import nz.geek.goodwin.scoring.domain.ScoredDancers;
 import nz.geek.goodwin.scoring.domain.Spreadsheet;
 import nz.geek.goodwin.scoring.relative.RelativeScoringService;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 public class Main {
@@ -146,20 +144,6 @@ public class Main {
         spreadsheet.put(couple12, judgeChief, "9.20");
 
         new RelativeScoringService(spreadsheet).process();
-    }
-
-    private static List<RelativeScore> buildScoreObjects(Judge judge1, Map<ScoredDancers, String> scores) {
-        return scores.entrySet().stream()
-                .map(entry -> buildScoreObject(judge1, entry.getKey(), entry.getValue()))
-                .toList();
-    }
-
-    private static RelativeScore buildScoreObject(Judge judge, ScoredDancers couple, String rawScore) {
-        RelativeScore relativeScore = new RelativeScore();
-        relativeScore.setCompetitor(couple);
-        relativeScore.setJudge(judge);
-        relativeScore.setRawScore(new BigDecimal(rawScore));
-        return relativeScore;
     }
 
     private static ScoredDancers buildScoredDancers(Integer number, List<String> names) {

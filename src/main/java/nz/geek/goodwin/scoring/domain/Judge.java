@@ -1,7 +1,8 @@
 package nz.geek.goodwin.scoring.domain;
 
 public record Judge(Person person, boolean chiefJudge) {
-    public String displayName() {
+    @Override
+    public String toString() {
         return person.fullName();
     }
 }

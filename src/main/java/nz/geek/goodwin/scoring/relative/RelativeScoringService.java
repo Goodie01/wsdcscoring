@@ -3,12 +3,12 @@ package nz.geek.goodwin.scoring.relative;
 import nz.geek.goodwin.scoring.domain.Judge;
 import nz.geek.goodwin.scoring.domain.ScoredDancers;
 import nz.geek.goodwin.scoring.domain.Spreadsheet;
+import nz.geek.goodwin.scoring.relative.spreadsheet.AsciiPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 
 public class RelativeScoringService {
@@ -24,47 +24,31 @@ public class RelativeScoringService {
     }
 
     public void process() {
+        AsciiPrinter asciiPrinter = new AsciiPrinter(out);
         out.println("Initial raw scores:");
-        rawScores.output(
-                Comparator.comparing(Judge::chiefJudge).thenComparing(Judge::displayName),
-                Comparator.comparing(ScoredDancers::bibNumber),
-                Judge::displayName,
-                ScoredDancers::displayName
-        );
+        asciiPrinter.print(rawScores);
 
         validateScores();
 
         calculateOrdinalScores();
         out.println("Ordinal scores:");
-        ordinalScores.output(
-                Comparator.comparing(Judge::chiefJudge).thenComparing(Judge::displayName),
-                Comparator.comparing(ScoredDancers::bibNumber),
-                Judge::displayName,
-                ScoredDancers::displayName
-        );
+        asciiPrinter.print(ordinalScores);
 
         calculateMajorityTally();
         out.println("Majority tally:");
-        majorityTally.output(
-                Comparator.comparingInt(RelativeScoringService::majorityOrder),
-                Comparator.comparing(ScoredDancers::bibNumber),
-                Function.identity(),
-                ScoredDancers::displayName
-        );
+        asciiPrinter.print(majorityTally);
 
         sumOfOrdinalsForTieBreak();
         out.println("Sum of Ordinals for tie breaks:");
-        sumOfOrdinalsForTieBreaks.output(
-                Comparator.comparingInt(RelativeScoringService::majorityOrder),
-                Comparator.comparing(ScoredDancers::bibNumber),
-                Function.identity(),
-                ScoredDancers::displayName
-        );
+        asciiPrinter.print(sumOfOrdinalsForTieBreaks);
 
         FinalRankingCalculator finalRankingCalculator = new FinalRankingCalculator(majorityTally, ordinalScores);
         finalRankingCalculator.calculateFinalRanking();
         finalRanking = finalRankingCalculator.getFinalRanking();
-        finalRanking.forEach(dancer -> out.println("#" + dancer.bibNumber() + ": " + dancer.displayName()));
+        for (int i = 0; i < finalRanking.size(); i++) {
+            ScoredDancers dancer = finalRanking.get(i);
+            out.println((i+1) + ": " + dancer.toString());
+        }
     }
 
     private void validateScores() {
@@ -74,13 +58,13 @@ public class RelativeScoringService {
             allScoresForJudge
                     .forEach((entry, value) -> {
                         if (StringUtils.isBlank(value)) {
-                            throw new RuntimeException("Judge " + judge.displayName() + " has not issued a score for competitor " + entry.displayName());
+                            throw new RuntimeException("Judge " + judge + " has not issued a score for competitor " + entry);
                         }
                     });
 
             HashSet<String> uniqueScores = new HashSet<>(allScoresForJudge.values());
             if (uniqueScores.size() != allScoresForJudge.size()) {
-                throw new RuntimeException("Judge " + judge.displayName() + " did not give out unique scores");
+                throw new RuntimeException("Judge " + judge + " did not give out unique scores");
             }
         });
     }
