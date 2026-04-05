@@ -2,7 +2,7 @@ package nz.geek.goodwin.scoring.relative;
 
 import nz.geek.goodwin.scoring.domain.Judge;
 import nz.geek.goodwin.scoring.domain.ScoredDancers;
-import nz.geek.goodwin.scoring.domain.internal.Spreadsheet;
+import nz.geek.goodwin.scoring.domain.Spreadsheet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
@@ -117,7 +117,7 @@ public class RelativeScoringService {
              holder.getValue() < this.rawScores.getRows().size() + 1;
              holder.incValue()) { //For each placing...
             String title = holder.toString();
-            majorityTally.addColumns(title);
+            majorityTally.addColumn(title);
             ordinalScores.getRows().forEach(dancer -> {
                 if (calculatedDancers.contains(dancer)) {
                     majorityTally.put(dancer, title, "-");

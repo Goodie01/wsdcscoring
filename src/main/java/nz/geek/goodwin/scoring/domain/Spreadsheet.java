@@ -1,49 +1,49 @@
-package nz.geek.goodwin.scoring.domain.internal;
+package nz.geek.goodwin.scoring.domain;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Spreadsheet<Row, Column, CellValue> {
-    private final Set<Row> rows;
-    private final Set<Column> columns;
+    private final List<Row> rows;
+    private final List<Column> columns;
     private final Map<CompositeKey<Row, Column>, CellValue> entries;
 
     public Spreadsheet() {
-        rows = new HashSet<>();
-        columns = new HashSet<>();
+        rows = new ArrayList<>();
+        columns = new ArrayList<>();
         entries = new HashMap<>();
     }
 
     public Spreadsheet(final Spreadsheet<Row, Column, CellValue> other) {
-        this.rows = new HashSet<>(other.rows);
-        this.columns = new HashSet<>(other.columns);
+        this.rows = new ArrayList<>(other.rows);
+        this.columns = new ArrayList<>(other.columns);
 
         this.entries = new HashMap<>();
         other.entries.forEach((k, v) -> this.put(k.row, k.column, v));
     }
 
-    public void addRows(Row rows) {
-        this.rows.add(rows);
+    public void addRow(Row row) {
+        this.rows.add(row);
     }
 
-    public void addColumns(Column column) {
+    public void addColumn(Column column) {
         this.columns.add(column);
     }
 
-    public void addRows(Set<Row> rows) {
+    public void addRows(List<Row> rows) {
         this.rows.addAll(rows);
     }
 
-    public void addColumns(Set<Column> columns) {
+    public void addColumns(List<Column> columns) {
         this.columns.addAll(columns);
     }
 
-    public Set<Row> getRows() {
+    public List<Row> getRows() {
         return rows;
     }
 
-    public Set<Column> getColumns() {
+    public List<Column> getColumns() {
         return columns;
     }
 

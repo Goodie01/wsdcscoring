@@ -4,7 +4,7 @@ import nz.geek.goodwin.scoring.domain.Judge;
 import nz.geek.goodwin.scoring.domain.Person;
 import nz.geek.goodwin.scoring.domain.RelativeScore;
 import nz.geek.goodwin.scoring.domain.ScoredDancers;
-import nz.geek.goodwin.scoring.domain.internal.Spreadsheet;
+import nz.geek.goodwin.scoring.domain.Spreadsheet;
 import nz.geek.goodwin.scoring.relative.RelativeScoringService;
 
 import java.math.BigDecimal;
@@ -38,8 +38,8 @@ public class Main {
 
         Spreadsheet<ScoredDancers, Judge, String> spreadsheet = new Spreadsheet<>();
 //        spreadsheet.addColumns(Set.of(judge1, judge2, judge3, judge4, judge5, judge6, judge7, judge8, judge9, judgeChief));
-        spreadsheet.addColumns(Set.of(judge1, judge2, judge3, judge4, judge5, judge6, judge7, judgeChief));
-        spreadsheet.addRows(Set.of(couple1, couple2, couple3, couple4, couple5, couple6, couple7, couple8, couple9, couple10, couple11, couple12));
+        spreadsheet.addColumns(List.of(judge1, judge2, judge3, judge4, judge5, judge6, judge7, judgeChief));
+        spreadsheet.addRows(List.of(couple1, couple2, couple3, couple4, couple5, couple6, couple7, couple8, couple9, couple10, couple11, couple12));
 
         spreadsheet.put(couple1, judge1, "8.75");
         spreadsheet.put(couple2, judge1, "8.63");
