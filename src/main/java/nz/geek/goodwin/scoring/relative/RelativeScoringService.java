@@ -53,14 +53,12 @@ public class RelativeScoringService {
             ScoredDancers dancer = finalRanking.get(i);
             out.println((i+1) + ": " + dancer.toString());
         }
-        Path outputFile = Path.of("spreadsheet.html");
 
+        Path outputFile = Path.of("spreadsheet.html");
         try (PrintStream out = new PrintStream(Files.newOutputStream(outputFile))) {
             HtmlPrinter printer = new HtmlPrinter(out);
-            printer.print(ordinalScores, "Example Spreadsheet");
+            printer.print(ordinalScores, "Ordinal Scores");
         }
-
-
     }
 
     private void validateScores() {

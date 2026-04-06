@@ -1,5 +1,7 @@
 package nz.geek.goodwin.scoring.domain;
 
+import org.apache.commons.lang3.function.TriConsumer;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -108,6 +110,10 @@ public class Spreadsheet<Row, Column, CellValue> {
         }
 
         entries.put(new CompositeKey<>(row, column), value);
+    }
+
+    public void forEach(TriConsumer<Row, Column, CellValue> consumer) {
+        entries.forEach((k, v) -> consumer.accept(k.row(), k.column(), v));
     }
 
     private record CompositeKey<Rows, Columns>(Rows row, Columns column) {
