@@ -1,4 +1,4 @@
-package nz.geek.goodwin.scoring.relative.spreadsheet;
+package nz.geek.goodwin.scoring.internal.spreadsheet;
 
 import nz.geek.goodwin.scoring.domain.Spreadsheet;
 

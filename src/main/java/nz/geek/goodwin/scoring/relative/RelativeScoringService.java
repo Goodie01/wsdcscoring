@@ -3,8 +3,8 @@ package nz.geek.goodwin.scoring.relative;
 import nz.geek.goodwin.scoring.domain.Judge;
 import nz.geek.goodwin.scoring.domain.ScoredDancers;
 import nz.geek.goodwin.scoring.domain.Spreadsheet;
-import nz.geek.goodwin.scoring.relative.spreadsheet.AsciiPrinter;
-import nz.geek.goodwin.scoring.relative.spreadsheet.HtmlPrinter;
+import nz.geek.goodwin.scoring.internal.spreadsheet.AsciiPrinter;
+import nz.geek.goodwin.scoring.internal.spreadsheet.HtmlPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
@@ -65,6 +65,14 @@ public class RelativeScoringService {
 
     private void validateScores() {
         //Rule 3.4 > 7 > b - Odd number of judges used (excluding chief judge)
+        if (this.rawScores.getColumns().stream().filter(judge -> !judge.chiefJudge()).count() % 2 == 0) {
+            throw new RuntimeException("Must use an odd number of judges");
+        }
+
+        if (this.rawScores.getColumns().stream().filter(Judge::chiefJudge).count() != 1) {
+            throw new RuntimeException("There must be only one chief judge");
+        }
+
         this.rawScores.getColumns().forEach(judge -> {
             Map<ScoredDancers, String> allScoresForJudge = rawScores.getAllForColumn(judge);
             allScoresForJudge
