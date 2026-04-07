@@ -27,9 +27,7 @@ public class CallBackScoringService {
     public void process() throws IOException {
         ordinalScores = new Spreadsheet<>();
         ordinalScores.addRows(this.rawScores.getRows());
-        ordinalScores.addColumns(
-                this.rawScores.getColumns().stream().filter(judge -> !judge.chiefJudge()).toList()
-        );
+        ordinalScores.addColumns(this.rawScores.getColumns());
 
         rawScores.forEach((dancer, judge, score) -> {
             if (judge.chiefJudge()) {
