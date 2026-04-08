@@ -42,7 +42,7 @@ public class FinalRankingCalculator {
                     .filter(entry -> !Strings.CI.equals("-", entry.getValue()))
                     .sorted((o1, o2) -> {
                         if (o1.getValue().equals(o2.getValue())) {
-                            return tieBreakCompare(o1.getKey(), o2.getKey(), level);
+                            return tieBreakCompareSum(o1.getKey(), o2.getKey(), level, level);
                         }
                         return MAP_COMPARING_BY_VALUE.compare(o1, o2);
                     })
@@ -54,7 +54,7 @@ public class FinalRankingCalculator {
         }
     }
 
-    private int tieBreakCompare(ScoredDancers o1, ScoredDancers o2, int level) {
+    private int tieBreakCompareSum(ScoredDancers o1, ScoredDancers o2, int originalLevel, int level) {
         if (level > ordinalScores.getRows().size()) {
             throw new RuntimeException("Too many levels");
         }
@@ -63,11 +63,51 @@ public class FinalRankingCalculator {
         int o2Sum = filterOrdinalScoresForDancer(o2, level).sum();
 
         if (o1Sum == o2Sum) {
-            out.println("Attempted tie break at " + new IntHolder(level) + ";" + o1 + " vs " + o2 + "; " + o1Sum + " vs " + o2Sum + "");
-            return tieBreakCompare(o1, o2, level + 1);
+            out.println("Attempted sum tie break at " + originalLevel + ";" + o1 + " vs " + o2 + "; " + o1Sum + " vs " + o2Sum + "");
+            return tieBreakCompareCount(o1, o2, originalLevel, level + 1);
         }
 
-        out.println("Tie break at " + new IntHolder(level) + ";" + o1 + " vs " + o2 + "; " + o1Sum + " vs " + o2Sum + "");
+        out.println("sum tie break at " + originalLevel + ";" + o1 + " vs " + o2 + "; " + o1Sum + " vs " + o2Sum + "");
+        return Integer.compare(o1Sum, o2Sum);
+    }
+
+    private int tieBreakCompareCount(ScoredDancers o1, ScoredDancers o2, int originalLevel, int level) {
+        if (level > ordinalScores.getRows().size()) {
+            return tieBreakCompareFinal(o1, o2, originalLevel, level);
+        }
+
+        long o1Count = filterOrdinalScoresForDancer(o1, level).count();
+        long o2Count = filterOrdinalScoresForDancer(o2, level).count();
+
+        if (o1Count == o2Count) {
+            out.println("Attempted count tie break for " + originalLevel + ";" + o1 + " vs " + o2 + "; " + o1Count + " vs " + o2Count + "");
+            return tieBreakCompareCount(o1, o2, originalLevel, level + 1);
+        }
+
+        out.println("Count tie break at " + originalLevel + ";" + o1 + " vs " + o2 + "; " + o1Count + " vs " + o2Count + "");
+        return Long.compare(o2Count, o1Count);
+    }
+
+    private int tieBreakCompareFinal(ScoredDancers o1, ScoredDancers o2, int originalLevel, int level) {
+        System.out.println("Final tie break begin");
+
+        int o1Sum = 0;
+        int o2Sum = 0;
+
+        for (Judge judge : ordinalScores.getColumns()) {
+            if (judge.chiefJudge()) {
+                continue;
+            }
+            Integer dancer1Score = ordinalScores.get(o1, judge);
+            Integer dancer2Score = ordinalScores.get(o2, judge);
+
+            if (dancer1Score > dancer2Score) {
+                o1Sum++;
+            } else if (dancer1Score < dancer2Score) {
+                o2Sum++;
+            }
+        }
+
         return Integer.compare(o1Sum, o2Sum);
     }
 

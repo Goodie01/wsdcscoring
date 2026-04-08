@@ -4,6 +4,7 @@ import nz.geek.goodwin.scoring.domain.Judge;
 import nz.geek.goodwin.scoring.domain.Person;
 import nz.geek.goodwin.scoring.domain.ScoredDancers;
 import nz.geek.goodwin.scoring.domain.Spreadsheet;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -48,7 +49,84 @@ class RelativeScoringServiceTest {
         inputRawScores.addColumn(judge7, "8.30", "8.80", "9.00", "9.50", "8.60", "8.10", "9.40", "8.50", "9.60", "8.90", "7.90", "9.20");
         inputRawScores.addColumn(judgeChief, "8.90", "9.10", "8.70", "9.40", "9.00", "8.00", "9.30", "8.60", "9.50", "8.80", "8.40", "9.20");
 
-        new RelativeScoringService(inputRawScores).process();
+        RelativeScoringService relativeScoringService = new RelativeScoringService(inputRawScores, true);
+        relativeScoringService.process();
+
+        Assertions.assertThat(relativeScoringService.getFinalRanking())
+                .containsExactly(couple4, couple9, couple7, couple12, couple3, couple5, couple10, couple2, couple8, couple6, couple1, couple11);
+    }
+    @Test
+    public void lastTieBreakTest() throws IOException {
+        Judge judge1 = new Judge(new Person(UUID.randomUUID().toString(), "Judge #1"), false);
+        Judge judge2 = new Judge(new Person(UUID.randomUUID().toString(), "Judge #2"), false);
+        Judge judge3 = new Judge(new Person(UUID.randomUUID().toString(), "Judge #3"), false);
+        Judge judge4 = new Judge(new Person(UUID.randomUUID().toString(), "Judge #4"), false);
+        Judge judge5 = new Judge(new Person(UUID.randomUUID().toString(), "Judge #5"), false);
+        Judge judge6 = new Judge(new Person(UUID.randomUUID().toString(), "Judge #6"), false);
+        Judge judge7 = new Judge(new Person(UUID.randomUUID().toString(), "Judge #7"), false);
+        Judge judgeChief = new Judge(new Person(UUID.randomUUID().toString(), "Chief Judge"), true);
+
+        ScoredDancers couple1 = ScoredDancers.of(1, "Couple A");
+        ScoredDancers couple2 = ScoredDancers.of(2, "Couple B");
+        ScoredDancers couple3 = ScoredDancers.of(2, "Couple C, other");
+
+        Spreadsheet<ScoredDancers, Judge, String> inputRawScores = new Spreadsheet<>();
+        inputRawScores.addRows(List.of(couple1, couple2, couple3));
+        inputRawScores.addColumn(judge1, "1", "2", "3");
+        inputRawScores.addColumn(judge2, "2", "1", "3");
+        inputRawScores.addColumn(judge3, "1", "3", "2");
+        inputRawScores.addColumn(judge4, "2", "1", "3");
+        inputRawScores.addColumn(judge5, "3", "2", "1");
+        inputRawScores.addColumn(judge6, "2", "1", "3");
+        inputRawScores.addColumn(judge7, "1", "2", "3");
+        inputRawScores.addColumn(judgeChief, "1", "2", "3");
+
+        RelativeScoringService relativeScoringService = new RelativeScoringService(inputRawScores, false);
+        relativeScoringService.process();
+
+        Assertions.assertThat(relativeScoringService.getFinalRanking())
+                .containsExactly(couple2, couple1, couple3);
+    }
+
+    @Test
+    public void swingvasionTest() throws IOException {
+        Judge judge1 = new Judge(new Person(UUID.randomUUID().toString(), "EG"), false);
+        Judge judge2 = new Judge(new Person(UUID.randomUUID().toString(), "MPV"), false);
+        Judge judge3 = new Judge(new Person(UUID.randomUUID().toString(), "KR"), false);
+        Judge judge4 = new Judge(new Person(UUID.randomUUID().toString(), "TSW"), false);
+        Judge judge5 = new Judge(new Person(UUID.randomUUID().toString(), "CF"), false);
+        Judge judgeChief = new Judge(new Person(UUID.randomUUID().toString(), "Chief Judge"), true);
+
+        ScoredDancers couple1 = ScoredDancers.of(214, "Tom Gillespie", "Alexa Patterson");
+        ScoredDancers couple2 = ScoredDancers.of(194, "Corey Jenkins", "Cara Horisk");
+        ScoredDancers couple3 = ScoredDancers.of(192, "Shweta Mehta", "Ren Pritchard");
+        ScoredDancers couple4 = ScoredDancers.of(195, "Tim Heere", "Lucy Bekker");
+        ScoredDancers couple5 = ScoredDancers.of(101, "Charlotte Holmes", "Lily Partington");
+        ScoredDancers couple6 = ScoredDancers.of(176, "Jaimee Thomas", "Ingeborg Gruner Skram ");
+        ScoredDancers couple7 = ScoredDancers.of(113, "Graham Aiken", "Georgia Coburn");
+        ScoredDancers couple8 = ScoredDancers.of(155, "Mark Akula-Gray", "Holly Gillett");
+        ScoredDancers couple9 = ScoredDancers.of(125, "Todd Marles", "Harshi Sisodia");
+        ScoredDancers couple10 = ScoredDancers.of(119, "Chris Ward", "Solana Carpenter");
+        ScoredDancers couple11 = ScoredDancers.of(135, "Levi Van Rheenen", "Logan Clarricoats");
+        ScoredDancers couple12 = ScoredDancers.of(199, "Blake Bedford-Palmer", "Hanna Lu");
+        ScoredDancers couple13 = ScoredDancers.of(233, "Bor-Kuan (BK) Song", "Claire O'Keeffe");
+        ScoredDancers couple14 = ScoredDancers.of(232, "Chris Fusco", "Carolyn Stanfield");
+        ScoredDancers couple15 = ScoredDancers.of(215, "Melissa Gillespie", "Sheena Sadhu");
+
+        Spreadsheet<ScoredDancers, Judge, String> inputRawScores = new Spreadsheet<>();
+        inputRawScores.addRows(List.of(couple1, couple2, couple3, couple4, couple5, couple6, couple7, couple8, couple9, couple10, couple11, couple12, couple13, couple14, couple15));
+        inputRawScores.addColumn(judge1, "1", "7", "2", "8", "4", "6", "3", "14", "9", "15", "10", "5", "12", "11", "13");
+        inputRawScores.addColumn(judge2, "9", "2", "1", "3", "11", "6", "8", "4", "7", "5", "10", "15", "12", "13", "14");
+        inputRawScores.addColumn(judge3, "1", "7", "12", "5", "9", "11", "10", "6", "3", "13", "2", "4", "8", "15", "14");
+        inputRawScores.addColumn(judge4, "3", "1", "10", "12", "6", "7", "4", "8", "11", "5", "2", "13", "9", "14", "15");
+        inputRawScores.addColumn(judge5, "2", "1", "4", "3", "6", "5",  "7", "8", "12", "9", "10", "11", "15", "13", "14");
+        inputRawScores.addColumn(judgeChief, "2", "1", "4", "3", "6", "5",  "7", "8", "12", "9", "10", "11", "15", "13", "14");
+
+        RelativeScoringService relativeScoringService = new RelativeScoringService(inputRawScores, false);
+        relativeScoringService.process();
+
+        Assertions.assertThat(relativeScoringService.getFinalRanking())
+                .containsExactly(couple1, couple2, couple3, couple4, couple5, couple6, couple7, couple8, couple9, couple10, couple11, couple12, couple13, couple14, couple15);
     }
 
 }

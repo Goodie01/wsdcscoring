@@ -18,13 +18,15 @@ import java.util.stream.IntStream;
 public class RelativeScoringService {
     private final PrintStream out = System.out;
     private final Spreadsheet<ScoredDancers, Judge, String> rawScores;
+    private final boolean judgesUsingRawScores;
     private Spreadsheet<ScoredDancers, Judge, Integer> ordinalScores;
     private Spreadsheet<ScoredDancers, String, String> majorityTally;
     private Spreadsheet<ScoredDancers, String, Integer> sumOfOrdinalsForTieBreaks;
     private List<ScoredDancers> finalRanking;
 
-    public RelativeScoringService(Spreadsheet<ScoredDancers, Judge, String> rawScores) {
+    public RelativeScoringService(Spreadsheet<ScoredDancers, Judge, String> rawScores, boolean judgesUsingRawScores) {
         this.rawScores = rawScores;
+        this.judgesUsingRawScores = judgesUsingRawScores;
     }
 
     public void process() throws IOException {
@@ -88,6 +90,14 @@ public class RelativeScoringService {
     }
 
     private void calculateOrdinalScores() {
+        if (!judgesUsingRawScores) {
+            ordinalScores = new Spreadsheet<>();
+            ordinalScores.addRows(this.rawScores.getRows());
+            ordinalScores.addColumns(this.rawScores.getColumns());
+            rawScores.forEach((dancer, judge, score) -> ordinalScores.put(dancer, judge, Integer.parseInt(score)));
+            return;
+        }
+
         Comparator<Map.Entry<ScoredDancers, String>> comparing = Map.Entry.comparingByValue();
         Comparator<Map.Entry<ScoredDancers, String>> comparingFinal = comparing.reversed();
 
@@ -186,5 +196,9 @@ public class RelativeScoringService {
 
         int end = suffix.length() - 2; // removes st/nd/rd/th
         return Integer.parseInt(suffix.substring(0, end));
+    }
+
+    public List<ScoredDancers> getFinalRanking() {
+        return finalRanking;
     }
 }
