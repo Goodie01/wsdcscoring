@@ -58,43 +58,45 @@ class CallBackScoringServiceTest {
 
         Spreadsheet<ScoredDancers, Judge, String> inputRawScores = new Spreadsheet<>();
         inputRawScores.addColumns(List.of(judge1, judge2, judge3, judge4, judgeChief));
-         inputRawScores.addRow(couple1, "Yes", "yes", "yes", "yes", "1");
-         inputRawScores.addRow(couple2, "Yes", "yes", "yes", "yes", "2");
-         inputRawScores.addRow(couple3, "Yes", "yes", "yes", "yes", "3");
-         inputRawScores.addRow(couple4, "Yes", "yes", "yes", "yes", "4");
-         inputRawScores.addRow(couple5, "Yes", "yes", "yes", "no", "5");
-         inputRawScores.addRow(couple6, "Yes", "yes", "yes", "no", "6");
-         inputRawScores.addRow(couple7, "Yes", "yes", "yes", "no", "7");
-         inputRawScores.addRow(couple8, "Yes", "yes", "yes", "no", "8");
-         inputRawScores.addRow(couple9, "Yes", "yes", "yes", "no", "9");
-         inputRawScores.addRow(couple10, "Yes", "yes", "yes", "no", "10");
-         inputRawScores.addRow(couple11, "yes", "yes", "alt_1", "", "11");
-         inputRawScores.addRow(couple12, "yes", "yes", "alt_1", "", "12");
-         inputRawScores.addRow(couple13, "yes", "yes", "", "", "13");
-         inputRawScores.addRow(couple14, "yes", "yes", "", "", "14");
-         inputRawScores.addRow(couple15, "yes", "yes", "", "", "15");
-         inputRawScores.addRow(couple16, "yes", "yes", "", "", "16");
-         inputRawScores.addRow(couple17, "yes", "yes", "", "", "17");
-         inputRawScores.addRow(couple18, "yes", "yes", "", "", "18");
-         inputRawScores.addRow(couple19, "yes", "yes", "", "", "19");
-         inputRawScores.addRow(couple20, "yes", "alt_1", "alt_2", "", "20");
-         inputRawScores.addRow(couple21, "yes", "alt_1", "", "", "21");
-         inputRawScores.addRow(couple22, "yes", "alt_2", "", "", "22");
-         inputRawScores.addRow(couple23, "yes", "alt_2", "", "", "23");
-         inputRawScores.addRow(couple24, "yes", "", "", "", "24");
-         inputRawScores.addRow(couple25, "yes", "", "", "", "25");
-         inputRawScores.addRow(couple26, "yes", "", "", "", "26");
-         inputRawScores.addRow(couple27, "yes", "", "", "", "27");
-         inputRawScores.addRow(couple28, "alt_2", "", "", "", "28");
-         inputRawScores.addRow(couple29, "", "", "", "", "29");
-         inputRawScores.addRow(couple30, "", "", "", "", "30");
+        inputRawScores.addRow(couple1, "Yes", "yes", "yes", "yes", "1");
+        inputRawScores.addRow(couple2, "Yes", "yes", "yes", "yes", "2");
+        inputRawScores.addRow(couple3, "Yes", "yes", "yes", "yes", "3");
+        inputRawScores.addRow(couple4, "Yes", "yes", "yes", "yes", "4");
+        inputRawScores.addRow(couple5, "Yes", "yes", "yes", "no", "5");
+        inputRawScores.addRow(couple6, "Yes", "yes", "yes", "no", "6");
+        inputRawScores.addRow(couple7, "Yes", "yes", "yes", "no", "7");
+        inputRawScores.addRow(couple8, "Yes", "yes", "yes", "no", "8");
+        inputRawScores.addRow(couple9, "Yes", "yes", "yes", "no", "9");
+        inputRawScores.addRow(couple10, "Yes", "yes", "yes", "no", "10");
+        inputRawScores.addRow(couple11, "yes", "yes", "alt_1", "", "11");
+        inputRawScores.addRow(couple12, "yes", "yes", "alt_1", "", "12");
+        inputRawScores.addRow(couple13, "yes", "yes", "", "", "13");
+        inputRawScores.addRow(couple14, "yes", "yes", "", "", "14");
+        inputRawScores.addRow(couple15, "yes", "yes", "", "", "15");
+        inputRawScores.addRow(couple16, "yes", "yes", "", "", "16");
+        inputRawScores.addRow(couple17, "yes", "yes", "", "", "17");
+        inputRawScores.addRow(couple18, "yes", "yes", "", "", "18");
+        inputRawScores.addRow(couple19, "yes", "yes", "", "", "19");
+        inputRawScores.addRow(couple20, "yes", "alt_1", "alt_2", "", "20");
+        inputRawScores.addRow(couple21, "yes", "alt_1", "", "", "21");
+        inputRawScores.addRow(couple22, "yes", "alt_2", "", "", "22");
+        inputRawScores.addRow(couple23, "yes", "alt_2", "", "", "23");
+        inputRawScores.addRow(couple24, "yes", "", "", "", "24");
+        inputRawScores.addRow(couple25, "yes", "", "", "", "25");
+        inputRawScores.addRow(couple26, "yes", "", "", "", "26");
+        inputRawScores.addRow(couple27, "yes", "", "", "", "27");
+        inputRawScores.addRow(couple28, "alt_2", "", "", "", "28");
+        inputRawScores.addRow(couple29, "", "", "", "", "29");
+        inputRawScores.addRow(couple30, "", "", "", "", "30");
 
 
-        new CallBackScoringService(inputRawScores, Map.of(
-                "Yes", BigDecimal.valueOf(10.0),
-                "alt_1", BigDecimal.valueOf(4.5),
-                "alt_2", BigDecimal.valueOf(4.3),
-                "alt_3", BigDecimal.valueOf(4,2)
-        )).process();
+        new CallBackScoringService(inputRawScores,
+                15,
+                Map.of(
+                        "Yes", BigDecimal.valueOf(10.0),
+                        "alt_1", BigDecimal.valueOf(4.5),
+                        "alt_2", BigDecimal.valueOf(4.3),
+                        "alt_3", BigDecimal.valueOf(4, 2)
+                )).process();
     }
 }

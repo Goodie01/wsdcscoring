@@ -19,14 +19,18 @@ public class CallBackScoringService {
     private static final Comparator<Map.Entry<ScoredDancers, BigDecimal>> MAP_COMPARING_BY_VALUE = Map.Entry.<ScoredDancers, BigDecimal>comparingByValue().reversed();
 
     private final Spreadsheet<ScoredDancers, Judge, String> rawScores;
+    private final int numberGoingThrough;
     private final Map<String, BigDecimal> scoringMap;
     private Spreadsheet<ScoredDancers, Judge, BigDecimal> ordinalScores;
     private Map<ScoredDancers, BigDecimal> finalSum;
     private List<ScoredDancers> finalRanking;
+    Spreadsheet<ScoredDancers, String, String> finalOutput;
 
     public CallBackScoringService(Spreadsheet<ScoredDancers, Judge, String> rawScores,
+                                  int numberGoingThrough,
                                   Map<String, BigDecimal> scoringMap) {
         this.rawScores = rawScores;
+        this.numberGoingThrough = numberGoingThrough;
         this.scoringMap = scoringMap.entrySet()
                 .stream()
                 .collect(Collectors.toMap(
@@ -37,10 +41,9 @@ public class CallBackScoringService {
 
     public void process() throws IOException {
         validateScores();
-
         calculateOrbinalScores();
-
         calculateFinalRanking();
+
 
         AsciiPrinter asciiPrinter = new AsciiPrinter(System.out);
         asciiPrinter.print(ordinalScores);

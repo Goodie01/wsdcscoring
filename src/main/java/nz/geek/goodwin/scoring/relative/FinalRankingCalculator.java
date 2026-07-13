@@ -16,6 +16,7 @@ public class FinalRankingCalculator {
     private final Spreadsheet<ScoredDancers, String, String> majorityTally;
     private final Spreadsheet<ScoredDancers, Judge, Integer> ordinalScores;
     private List<ScoredDancers> finalRanking;
+    private Spreadsheet<ScoredDancers, String, String> finalOutput;
 
     public FinalRankingCalculator(Spreadsheet<ScoredDancers, String, String> majorityTally,
                                   Spreadsheet<ScoredDancers, Judge, Integer> ordinalScores) {
@@ -27,16 +28,44 @@ public class FinalRankingCalculator {
         return finalRanking;
     }
 
+    public Spreadsheet<ScoredDancers, String, String> getFinalOutput() {
+        return finalOutput;
+    }
+
     public void calculateFinalRanking() {
         this.finalRanking = new ArrayList<>();
+        this.finalOutput = new Spreadsheet<>();
+        this.finalOutput.addRows(this.majorityTally.getRows());
+        this.finalOutput.addColumn("Final Ranking");
+
+        ordinalScores.getColumns().forEach(judge -> {
+            if (judge.chiefJudge()) {
+                return;
+            }
+            this.finalOutput.addColumn(judge.toString());
+        });
+
+        ordinalScores.forEach((dancer, judge, score) -> {
+            if (judge.chiefJudge()) {
+                return;
+            }
+
+            this.finalOutput.put(dancer, judge.toString(), String.valueOf(score));
+        });
 
         List<String> columns = new ArrayList<>(this.majorityTally.getColumns()).stream()
                 .sorted(Comparator.comparing(FinalRankingCalculator::majorityOrder))
                 .toList();
         for (int i = 0; i < columns.size(); i++) {
-            int level = majorityOrder(columns.get(i)); //Turns something like 'Maj: 1st to 6th' to 6
+            String columnTitle = columns.get(i);
+            int level = majorityOrder(columnTitle); //Turns something like 'Maj: 1st to 6th' to 6
 
-            List<Map.Entry<ScoredDancers, String>> list = this.majorityTally.getAllForColumn(columns.get(i))
+            this.finalOutput.addColumn(columnTitle);
+            this.majorityTally.getAllForColumn(columnTitle).forEach((entry, value) -> {
+                this.finalOutput.put(entry, columnTitle, value);
+            });
+
+            List<Map.Entry<ScoredDancers, String>> list = this.majorityTally.getAllForColumn(columnTitle)
                     .entrySet()
                     .stream()
                     .filter(entry -> !Strings.CI.equals("-", entry.getValue()))
@@ -52,6 +81,12 @@ public class FinalRankingCalculator {
                 this.finalRanking.add(entry.getKey());
             });
         }
+
+        for (int i = 0; i < this.finalRanking.size(); i++) {
+            this.finalOutput.put(this.finalRanking.get(i), "Final Ranking", String.valueOf(i + 1));
+        }
+
+        this.finalOutput.getRows().sort(Comparator.comparing(o -> this.finalRanking.indexOf(o)));
     }
 
     private int tieBreakCompareSum(ScoredDancers o1, ScoredDancers o2, int originalLevel, int level) {
@@ -62,12 +97,15 @@ public class FinalRankingCalculator {
         int o1Sum = filterOrdinalScoresForDancer(o1, level).sum();
         int o2Sum = filterOrdinalScoresForDancer(o2, level).sum();
 
+        String newString = new IntHolder(originalLevel).toString() + " sum tie break at " + level;
+        this.finalOutput.addColumn(newString);
+        this.finalOutput.put(o1, newString, String.valueOf(o1Sum));
+        this.finalOutput.put(o2, newString, String.valueOf(o2Sum));
+
         if (o1Sum == o2Sum) {
-            out.println("Attempted sum tie break at " + originalLevel + ";" + o1 + " vs " + o2 + "; " + o1Sum + " vs " + o2Sum + "");
             return tieBreakCompareCount(o1, o2, originalLevel, level + 1);
         }
 
-        out.println("sum tie break at " + originalLevel + ";" + o1 + " vs " + o2 + "; " + o1Sum + " vs " + o2Sum + "");
         return Integer.compare(o1Sum, o2Sum);
     }
 
@@ -79,12 +117,16 @@ public class FinalRankingCalculator {
         long o1Count = filterOrdinalScoresForDancer(o1, level).count();
         long o2Count = filterOrdinalScoresForDancer(o2, level).count();
 
+
+        String newString = new IntHolder(originalLevel).toString() + " count tie break at " + level;
+        this.finalOutput.addColumn(newString);
+        this.finalOutput.put(o1, newString, String.valueOf(o1Count));
+        this.finalOutput.put(o2, newString, String.valueOf(o2Count));
+
         if (o1Count == o2Count) {
-            out.println("Attempted count tie break for " + originalLevel + ";" + o1 + " vs " + o2 + "; " + o1Count + " vs " + o2Count + "");
             return tieBreakCompareCount(o1, o2, originalLevel, level + 1);
         }
 
-        out.println("Count tie break at " + originalLevel + ";" + o1 + " vs " + o2 + "; " + o1Count + " vs " + o2Count + "");
         return Long.compare(o2Count, o1Count);
     }
 
@@ -107,6 +149,11 @@ public class FinalRankingCalculator {
                 o2Sum++;
             }
         }
+
+        String newString = new IntHolder(originalLevel).toString() + " final break at " + level;
+        this.finalOutput.addColumn(newString);
+        this.finalOutput.put(o1, newString, String.valueOf(o1Sum));
+        this.finalOutput.put(o2, newString, String.valueOf(o2Sum));
 
         return Integer.compare(o1Sum, o2Sum);
     }

@@ -25,7 +25,9 @@ public class Spreadsheet<Row, Column, CellValue> {
     }
 
     public void addRow(Row row, CellValue... values) {
-        this.rows.add(row);
+        if (!this.rows.contains(row)) {
+            this.rows.add(row);
+        }
 
         if (values.length != 0 && values.length != columns.size()) {
             throw new IllegalArgumentException("Invalid number of values");
@@ -37,7 +39,9 @@ public class Spreadsheet<Row, Column, CellValue> {
     }
 
     public void addColumn(Column column, CellValue... values) {
-        this.columns.add(column);
+        if (!this.columns.contains(column)) {
+            this.columns.add(column);
+        }
 
         if (values.length != 0 && values.length != rows.size()) {
             throw new IllegalArgumentException("Invalid number of values");
@@ -49,11 +53,11 @@ public class Spreadsheet<Row, Column, CellValue> {
     }
 
     public void addRows(List<Row> rows) {
-        this.rows.addAll(rows);
+        rows.forEach(this::addRow);
     }
 
     public void addColumns(List<Column> columns) {
-        this.columns.addAll(columns);
+        columns.forEach(this::addColumn);
     }
 
     public List<Row> getRows() {
