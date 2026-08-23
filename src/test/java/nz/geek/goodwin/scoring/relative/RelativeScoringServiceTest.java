@@ -129,4 +129,34 @@ class RelativeScoringServiceTest {
                 .containsExactly(couple1, couple2, couple3, couple4, couple5, couple6, couple7, couple8, couple9, couple10, couple11, couple12, couple13, couple14, couple15);
     }
 
+    @Test
+    public void shakedownSwingAdvanced() throws IOException {
+        Judge judge1 = new Judge(new Person(UUID.randomUUID().toString(), "Conner"), false);
+        Judge judge2 = new Judge(new Person(UUID.randomUUID().toString(), "Cameo"), false);
+        Judge judge3 = new Judge(new Person(UUID.randomUUID().toString(), "Ben"), false);
+        Judge judge4 = new Judge(new Person(UUID.randomUUID().toString(), "Madeleine"), false);
+        Judge judge5 = new Judge(new Person(UUID.randomUUID().toString(), "Zac"), false);
+        Judge judgeChief = new Judge(new Person(UUID.randomUUID().toString(), "Chief Judge"), true);
+
+        ScoredDancers couple1 = ScoredDancers.of(214, "Eric Gray", "Charlotte Forster");
+        ScoredDancers couple2 = ScoredDancers.of(194, "Robert Veale", "Keighlee Baker");
+        ScoredDancers couple3 = ScoredDancers.of(192, "Guido Von Mulert", "Cherise Von Mulert");
+        ScoredDancers couple4 = ScoredDancers.of(195, "Shanon Coxall-Jones", "Samantha Pugmire");
+        ScoredDancers couple5 = ScoredDancers.of(101, "Sury Salunkhe", "Liana Davies");
+        Spreadsheet<ScoredDancers, Judge, String> inputRawScores = new Spreadsheet<>();
+        inputRawScores.addRows(List.of(couple1, couple2, couple3, couple4, couple5));
+        inputRawScores.addColumn(judge1, "1", "3", "4", "2", "5");
+        inputRawScores.addColumn(judge2, "1", "3", "2", "4", "5");
+        inputRawScores.addColumn(judge3, "1", "2", "3", "4", "5");
+        inputRawScores.addColumn(judge4, "1", "2", "3", "4", "5");
+        inputRawScores.addColumn(judge5, "1", "4", "2", "3", "5");
+        inputRawScores.addColumn(judgeChief, "2", "1", "4", "3", "5");
+
+        RelativeScoringService relativeScoringService = new RelativeScoringService(inputRawScores, false);
+        relativeScoringService.process();
+
+        Assertions.assertThat(relativeScoringService.getFinalRanking())
+                .containsExactly(couple1, couple2, couple3, couple4, couple5);
+    }
+
 }
