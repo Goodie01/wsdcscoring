@@ -40,6 +40,11 @@ public class HtmlPrinter {
                       border: 2px solid #000;
                       font-size: 14px;
                     }
+                
+                    table.sheet th.header {
+                      writing-mode: vertical-rl;
+                      #text-orientation: upright;
+                    }
 
                     table.sheet th,
                     table.sheet td {
@@ -81,7 +86,7 @@ public class HtmlPrinter {
                 """);
 
         for (Column column : spreadsheet.getColumns()) {
-            out.println("        <th>" + escapeHtml(column) + "</th>");
+            out.println("        <th class='header'>" + escapeHtml(column) + "</th>");
         }
 
         out.println("""
