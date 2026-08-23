@@ -105,9 +105,8 @@ public class RelativeScoringService {
         majorityTally.addRows(this.rawScores.getRows());
         Set<ScoredDancers> calculatedDancers = new HashSet<>();
 
-        for (IntHolder holder = new IntHolder(1);
-             holder.getValue() < this.rawScores.getRows().size();
-             holder.incValue()) { //For each placing...
+        int sizeOfRawScores = this.rawScores.getRows().size();
+        for (IntHolder holder = new IntHolder(1); holder.getValue() <= sizeOfRawScores; holder.incValue()) { //For each placing...
             String title = holder.toString();
             majorityTally.addColumn(title);
             ordinalScores.getRows().forEach(dancer -> {
