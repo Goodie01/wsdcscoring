@@ -19,6 +19,7 @@ public class CallBackScoringService {
     private static final Comparator<Map.Entry<ScoredDancers, BigDecimal>> MAP_COMPARING_BY_VALUE = Map.Entry.<ScoredDancers, BigDecimal>comparingByValue().reversed();
 
     private final Spreadsheet<ScoredDancers, Judge, String> rawScores;
+    private final boolean chiefJudgeUsingRawScores;
     private final int numberGoingThrough;
     private final Map<String, BigDecimal> scoringMap;
     private Spreadsheet<ScoredDancers, Judge, BigDecimal> ordinalScores;
@@ -27,9 +28,11 @@ public class CallBackScoringService {
     Spreadsheet<ScoredDancers, String, String> finalOutput;
 
     public CallBackScoringService(Spreadsheet<ScoredDancers, Judge, String> rawScores,
+                                  boolean chiefJudgeUsingRawScores,
                                   int numberGoingThrough,
                                   Map<String, BigDecimal> scoringMap) {
         this.rawScores = rawScores;
+        this.chiefJudgeUsingRawScores = chiefJudgeUsingRawScores;
         this.numberGoingThrough = numberGoingThrough;
         this.scoringMap = scoringMap.entrySet()
                 .stream()
@@ -39,9 +42,13 @@ public class CallBackScoringService {
                 ));
     }
 
+    public List<ScoredDancers> getFinalRanking() {
+        return finalRanking;
+    }
+
     public void process() throws IOException {
         validateScores();
-        calculateOrbinalScores();
+        calculateOrdinalScores();
         calculateFinalRanking();
 
 
@@ -76,7 +83,7 @@ public class CallBackScoringService {
         List<Map.Entry<ScoredDancers, BigDecimal>> sortedRanking = finalSum.entrySet()
                 .stream()
                 .sorted((o1, o2) -> {
-                    if (o1.getValue().equals(o2.getValue())) {
+                    if (o1.getValue().compareTo(o2.getValue()) == 0) {
                         return Comparator.comparing((ScoredDancers o) -> ordinalScores.get(o, chiefJudge))
                                 .compare(o1.getKey(), o2.getKey());
                     }
@@ -103,16 +110,20 @@ public class CallBackScoringService {
                         }
                     });
 
-            HashSet<String> uniqueScores = new HashSet<>(allScoresForJudge.values());
+            Set<BigDecimal> uniqueScores = allScoresForJudge.values().stream()
+                    .map(v -> new BigDecimal(v).stripTrailingZeros())
+                    .collect(Collectors.toSet());
             if (uniqueScores.size() != allScoresForJudge.size()) {
                 throw new RuntimeException("Judge " + judge + " did not give out unique scores");
             }
         });
     }
 
-    private void calculateOrbinalScores() {
-        Comparator<Map.Entry<ScoredDancers, String>> comparing = Map.Entry.comparingByValue();
-        Comparator<Map.Entry<ScoredDancers, String>> comparingFinal = comparing.reversed();
+    private void calculateOrdinalScores() {
+        Comparator<Map.Entry<ScoredDancers, String>> lowestFirst =
+                Comparator.comparing((Map.Entry<ScoredDancers, String> e) -> new BigDecimal(e.getValue()));
+        // Raw scores: highest wins. Ordinals: lowest wins.
+        Comparator<Map.Entry<ScoredDancers, String>> comparingFinal = chiefJudgeUsingRawScores ? lowestFirst.reversed() : lowestFirst;
 
         ordinalScores = new Spreadsheet<>();
         ordinalScores.addRows(this.rawScores.getRows());

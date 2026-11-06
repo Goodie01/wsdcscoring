@@ -8,9 +8,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class RelativeScoringService {
@@ -62,7 +64,9 @@ public class RelativeScoringService {
                         }
                     });
 
-            HashSet<String> uniqueScores = new HashSet<>(allScoresForJudge.values());
+            Set<BigDecimal> uniqueScores = allScoresForJudge.values().stream()
+                    .map(v -> new BigDecimal(v).stripTrailingZeros())
+                    .collect(Collectors.toSet());
             if (uniqueScores.size() != allScoresForJudge.size()) {
                 throw new RuntimeException("Judge " + judge + " did not give out unique scores");
             }
@@ -78,8 +82,8 @@ public class RelativeScoringService {
             return;
         }
 
-        Comparator<Map.Entry<ScoredDancers, String>> comparing = Map.Entry.comparingByValue();
-        Comparator<Map.Entry<ScoredDancers, String>> comparingFinal = comparing.reversed();
+        Comparator<Map.Entry<ScoredDancers, String>> comparingFinal =
+                Comparator.comparing((Map.Entry<ScoredDancers, String> e) -> new BigDecimal(e.getValue())).reversed();
 
         ordinalScores = new Spreadsheet<>();
         ordinalScores.addRows(this.rawScores.getRows());

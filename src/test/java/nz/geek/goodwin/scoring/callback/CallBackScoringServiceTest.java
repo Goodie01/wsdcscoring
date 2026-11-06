@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CallBackScoringServiceTest {
 
@@ -91,12 +92,82 @@ class CallBackScoringServiceTest {
 
 
         new CallBackScoringService(inputRawScores,
+                false,
                 15,
                 Map.of(
                         "Yes", BigDecimal.valueOf(10.0),
                         "alt_1", BigDecimal.valueOf(4.5),
                         "alt_2", BigDecimal.valueOf(4.3),
-                        "alt_3", BigDecimal.valueOf(4, 2)
+                        "alt_3", BigDecimal.valueOf(4.2)
                 )).process();
+    }
+
+    private static final Map<String, BigDecimal> PAPER_VALUES = Map.of(
+            "yes", new BigDecimal("10"), "alt1", new BigDecimal("4.5"),
+            "alt2", new BigDecimal("4.3"), "alt3", new BigDecimal("4.2"));
+
+    private static Spreadsheet<ScoredDancers, Judge, String> sheet(List<ScoredDancers> couples) {
+        Spreadsheet<ScoredDancers, Judge, String> sheet = new Spreadsheet<>();
+        sheet.addRows(couples);
+        for (int i = 1; i <= 3; i++) {
+            sheet.addColumn(new Judge(new Person(UUID.randomUUID().toString(), "Judge #" + i), false));
+        }
+        sheet.addColumn(new Judge(new Person(UUID.randomUUID().toString(), "Chief Judge"), true));
+        return sheet;
+    }
+
+    @Test
+    public void chiefJudgeTieBreakComparedAsNumbers() throws IOException {
+        ScoredDancers a = ScoredDancers.of(1, "A");
+        ScoredDancers b = ScoredDancers.of(2, "B");
+        Spreadsheet<ScoredDancers, Judge, String> scores = sheet(List.of(a, b));
+        scores.addRow(a, "yes", "yes", "no", "10");
+        scores.addRow(b, "yes", "yes", "no", "9");
+
+        CallBackScoringService service = new CallBackScoringService(scores, true, 1, PAPER_VALUES);
+        service.process();
+
+        assertThat(service.getFinalRanking()).containsExactly(a, b);
+    }
+
+    @Test
+    public void chiefJudgeOrdinalsLowestWins() throws IOException {
+        ScoredDancers a = ScoredDancers.of(1, "A");
+        ScoredDancers b = ScoredDancers.of(2, "B");
+        Spreadsheet<ScoredDancers, Judge, String> scores = sheet(List.of(a, b));
+        scores.addRow(a, "yes", "yes", "no", "2");
+        scores.addRow(b, "yes", "yes", "no", "10");
+
+        CallBackScoringService service = new CallBackScoringService(scores, false, 1, PAPER_VALUES);
+        service.process();
+
+        assertThat(service.getFinalRanking()).containsExactly(a, b);
+    }
+
+    @Test
+    public void chiefJudgeNumericallyEqualScoresAreATie() {
+        ScoredDancers a = ScoredDancers.of(1, "A");
+        ScoredDancers b = ScoredDancers.of(2, "B");
+        Spreadsheet<ScoredDancers, Judge, String> scores = sheet(List.of(a, b));
+        scores.addRow(a, "yes", "yes", "no", "8.5");
+        scores.addRow(b, "yes", "yes", "no", "8.50");
+
+        assertThatThrownBy(() -> new CallBackScoringService(scores, true, 1, PAPER_VALUES).process())
+                .hasMessageContaining("did not give out unique scores");
+    }
+
+    @Test
+    public void equalTotalsWithDifferentDecimalPlacesUseChiefTieBreak() throws IOException {
+        ScoredDancers a = ScoredDancers.of(1, "A");
+        ScoredDancers b = ScoredDancers.of(2, "B");
+        Spreadsheet<ScoredDancers, Judge, String> scores = sheet(List.of(a, b));
+        scores.addRow(a, "yes", "no", "no", "1");      // 10
+        scores.addRow(b, "alt1", "alt1", "no", "2");   // 5.0 + 5.0 = 10.0, chief prefers B
+
+        CallBackScoringService service = new CallBackScoringService(scores, true, 1,
+                Map.of("yes", new BigDecimal("10"), "alt1", new BigDecimal("5.0")));
+        service.process();
+
+        assertThat(service.getFinalRanking()).containsExactly(b, a);
     }
 }

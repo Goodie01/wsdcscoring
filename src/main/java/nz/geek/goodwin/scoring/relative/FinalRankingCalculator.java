@@ -10,7 +10,8 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 public class FinalRankingCalculator {
-    private static final Comparator<Map.Entry<ScoredDancers, String>> MAP_COMPARING_BY_VALUE = Map.Entry.<ScoredDancers, String>comparingByValue().reversed();
+    private static final Comparator<Map.Entry<ScoredDancers, String>> MAP_COMPARING_BY_VALUE =
+            Comparator.comparing((Map.Entry<ScoredDancers, String> e) -> Integer.parseInt(e.getValue())).reversed();
 
     private final PrintStream out = System.out;
     private final Spreadsheet<ScoredDancers, String, String> majorityTally;

@@ -159,4 +159,63 @@ class RelativeScoringServiceTest {
                 .containsExactly(couple1, couple2, couple3, couple4, couple5);
     }
 
+    @Test
+    public void rawScoresComparedAsNumbers() throws IOException {
+        ScoredDancers a = ScoredDancers.of(1, "A");
+        ScoredDancers b = ScoredDancers.of(2, "B");
+        ScoredDancers c = ScoredDancers.of(3, "C");
+
+        Spreadsheet<ScoredDancers, Judge, String> inputRawScores = new Spreadsheet<>();
+        inputRawScores.addRows(List.of(a, b, c));
+        for (int i = 1; i <= 5; i++) {
+            inputRawScores.addColumn(new Judge(new Person(UUID.randomUUID().toString(), "Judge #" + i), false), "10", "9.5", "9");
+        }
+        inputRawScores.addColumn(new Judge(new Person(UUID.randomUUID().toString(), "Chief Judge"), true), "10", "9.5", "9");
+
+        RelativeScoringService relativeScoringService = new RelativeScoringService(inputRawScores, true);
+        relativeScoringService.process();
+
+        Assertions.assertThat(relativeScoringService.getFinalRanking()).containsExactly(a, b, c);
+    }
+
+    @Test
+    public void numericallyEqualRawScoresAreATie() {
+        Spreadsheet<ScoredDancers, Judge, String> inputRawScores = new Spreadsheet<>();
+        inputRawScores.addRows(List.of(ScoredDancers.of(1, "A"), ScoredDancers.of(2, "B")));
+        for (int i = 1; i <= 5; i++) {
+            inputRawScores.addColumn(new Judge(new Person(UUID.randomUUID().toString(), "Judge #" + i), false), "8.5", "8.50");
+        }
+        inputRawScores.addColumn(new Judge(new Person(UUID.randomUUID().toString(), "Chief Judge"), true), "9", "8");
+
+        Assertions.assertThatThrownBy(() -> new RelativeScoringService(inputRawScores, true).process())
+                .hasMessageContaining("did not give out unique scores");
+    }
+
+    @Test
+    public void elevenJudgesGreaterMajorityWins() throws IOException {
+        ScoredDancers a = ScoredDancers.of(1, "A");
+        ScoredDancers b = ScoredDancers.of(2, "B");
+        ScoredDancers c = ScoredDancers.of(3, "C");
+
+        // Values are ordinals for couples A, B, C. Nobody has a majority (6) of 1sts;
+        // at 1st-2nd A has 11 and B has 6, so A must place above B.
+        String[][] judgesScores = {
+                {"1", "2", "3"},
+                {"1", "3", "2"}, {"1", "3", "2"}, {"1", "3", "2"}, {"1", "3", "2"},
+                {"2", "1", "3"}, {"2", "1", "3"}, {"2", "1", "3"}, {"2", "1", "3"}, {"2", "1", "3"},
+                {"2", "3", "1"},
+        };
+
+        Spreadsheet<ScoredDancers, Judge, String> inputRawScores = new Spreadsheet<>();
+        inputRawScores.addRows(List.of(a, b, c));
+        for (int i = 0; i < judgesScores.length; i++) {
+            inputRawScores.addColumn(new Judge(new Person(UUID.randomUUID().toString(), "Judge #" + (i + 1)), false), judgesScores[i]);
+        }
+        inputRawScores.addColumn(new Judge(new Person(UUID.randomUUID().toString(), "Chief Judge"), true), "1", "2", "3");
+
+        RelativeScoringService relativeScoringService = new RelativeScoringService(inputRawScores, false);
+        relativeScoringService.process();
+
+        Assertions.assertThat(relativeScoringService.getFinalRanking()).containsExactly(a, b, c);
+    }
 }
